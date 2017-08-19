@@ -1,0 +1,16 @@
+{
+  "name": "linecounter",
+  "version": "1.0.0",
+  "description": "A CLI for summing lines of code in your directory.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lines",
+    "counter",
+    "linecounter"
+  ],
+  "author": "Markus Ivancsics <ivancsics.markus@icloud.com> (https://imarkus.me)",
+  "license": "MIT"
+}
