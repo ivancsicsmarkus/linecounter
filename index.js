@@ -8,32 +8,37 @@ function counter(file) {
 
 const ignore = {
 	user: process.argv[2] && process.argv[2].split(","),
-	default: ["node_modules", "package.json", "package-lock.json"]
+	default: ["node_modules", "package.json", "package-lock.json"],
+	extensions: ["jpg", "jpeg", "png", "svg", "psd"]
 }
 
 function readDirectory(dir) {
 	dir = dir ? dir + "/" : "./";
 	fs.readdir(dir, function(err, files) {
-		files.forEach((path) => {
+		files.forEach((fileName) => {
 			// .git, .DS_Store...
-			if (path[0] === ".") {
+			if (fileName[0] === ".") {
 				return;
 			}
 			// it is a directory, recursion happens
-			else if (fs.statSync(dir + path).isDirectory()) {
-				readDirectory(dir + path);
+			else if (fs.statSync(dir + fileName).isDirectory()) {
+				readDirectory(dir + fileName);
 			}
 			// the file must be ignored (by the user)
-			else if (ignore.user && ignore.user.includes(path)) {
+			else if (ignore.user && ignore.user.includes(fileName)) {
 				return;
 			}
-			// the files must be ignored (by default)
-			else if (ignore.default.includes(path)) {
+			// the file must be ignored (by default)
+			else if (ignore.default.includes(fileName)) {
+				return;
+			}
+			// the file must be ignored (because of extension)
+			else if (ignore.extensions.includes(fileName.split(".").pop())) {
 				return;
 			}
 			// it is a file
 			else {
-				counter(dir + path);
+				counter(dir + fileName);
 			}
 		});
 	})
