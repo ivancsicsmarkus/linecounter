@@ -1,4 +1,11 @@
+#!/usr/bin/env node
 const fs = require("fs");
+const program = require('commander');
+
+program
+	.option("-d, --directory <directory>", "Specify directory")
+	.option("-i, --ignore <filenames>", "Ignore specific files", function list(val) {return val.split(',');})
+	.parse(process.argv);
 
 var result = {
 	TOTAL_FILES: 0,     // tracking how much files
@@ -51,7 +58,7 @@ function counter(fileName, cb) {
 }
 
 const ignore = {
-	user: process.argv[2] && process.argv[2].split(","),
+	user: program.ignore,
 	default: ["node_modules", "package.json", "package-lock.json"],
 	extensions: ["jpg", "jpeg", "png", "svg", "ico", "xml", "psd"]
 }
@@ -90,4 +97,4 @@ function readDirectory(dir) {
 	})
 }
 
-readDirectory(process.argv[3]);
+readDirectory(program.directory);

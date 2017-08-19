@@ -4,8 +4,11 @@
   "description": "A CLI for summing lines of code in your directory.",
   "main": "index.js",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/ivancsicsmarkus/linecounter.git"
+    "type": "git",
+    "url": "https://github.com/ivancsicsmarkus/linecounter.git"
+  },
+  "bin": {
+    "linecounter": "./index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,5 +19,8 @@
     "linecounter"
   ],
   "author": "Markus Ivancsics <ivancsics.markus@icloud.com> (https://imarkus.me)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.11.0"
+  }
 }
