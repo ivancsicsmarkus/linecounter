@@ -1,8 +1,34 @@
 const fs = require("fs");
 
-function counter(file) {
-	fs.readFile(file, (err, file) => {
-		console.log(file.toString().split(/\r\n|\r|\n/).length);
+var result = {
+	total_files: 0,     // tracking how much files
+	completed_files: 0, // we had read
+	lines: 0
+};
+
+function finish() {
+	console.log(result);
+}
+
+function updateresult(metadata) {
+	// tracking...
+	result.completed_files++;
+	
+	result.lines += metadata.lines;
+
+	// we've read all the files
+	if (result.total_files === result.completed_files) {
+		// call finish
+		finish();
+	}
+}
+
+function counter(fileName, cb) {
+	fs.readFile(fileName, (err, file) => {
+		cb({
+			filename: fileName,
+			lines: file.toString().split(/\r\n|\r|\n/).length
+		});
 	});
 }
 
@@ -38,8 +64,10 @@ function readDirectory(dir) {
 			}
 			// it is a file
 			else {
-				counter(dir + fileName);
+				counter(dir + fileName, updateresult);
 			}
+			// tracking...
+			result.total_files++;
 		});
 	})
 }
