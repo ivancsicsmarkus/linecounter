@@ -13,8 +13,22 @@ function finish() {
 function updateresult(metadata) {
 	// tracking...
 	result.completed_files++;
-	
+	// total lines
 	result.lines += metadata.lines;
+
+	if(!result[metadata.extension + "_FILES"]) {
+		result[metadata.extension + "_FILES"] = 1;
+	}
+	else {
+		result[metadata.extension + "_FILES"]++;
+	}
+
+	if(!result[metadata.extension + "_LINES"]) {
+		result[metadata.extension + "_LINES"] = metadata.lines;
+	}
+	else {
+		result[metadata.extension + "_LINES"] += metadata.lines;
+	}
 
 	// we've read all the files
 	if (result.total_files === result.completed_files) {
@@ -25,8 +39,10 @@ function updateresult(metadata) {
 
 function counter(fileName, cb) {
 	fs.readFile(fileName, (err, file) => {
+		_extension = fileName.split(".").pop();
 		cb({
 			filename: fileName,
+			extension: "." + _extension !== fileName ? _extension : "PLAIN",
 			lines: file.toString().split(/\r\n|\r|\n/).length
 		});
 	});
@@ -46,10 +62,6 @@ function readDirectory(dir) {
 			if (fileName[0] === ".") {
 				return;
 			}
-			// it is a directory, recursion happens
-			else if (fs.statSync(dir + fileName).isDirectory()) {
-				readDirectory(dir + fileName);
-			}
 			// the file must be ignored (by the user)
 			else if (ignore.user && ignore.user.includes(fileName)) {
 				return;
@@ -62,6 +74,10 @@ function readDirectory(dir) {
 			else if (ignore.extensions.includes(fileName.split(".").pop())) {
 				return;
 			}
+			// it is a directory, recursion happens
+			else if (fs.statSync(dir + fileName).isDirectory()) {
+				return readDirectory(dir + fileName);
+			}
 			// it is a file
 			else {
 				counter(dir + fileName, updateresult);
@@ -72,4 +88,4 @@ function readDirectory(dir) {
 	})
 }
 
-readDirectory();
+readDirectory(process.argv[3]);
