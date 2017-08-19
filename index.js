@@ -1,20 +1,22 @@
 const fs = require("fs");
 
 var result = {
-	total_files: 0,     // tracking how much files
-	completed_files: 0, // we had read
-	lines: 0
+	TOTAL_FILES: 0,     // tracking how much files
+	COMPLETED_FILES: 0, // we had read
+	TOTAL_LINES: 0
 };
 
 function finish() {
+	delete result.TOTAL_FILES;
+	delete result.COMPLETED_FILES;
 	console.log(result);
 }
 
 function updateresult(metadata) {
 	// tracking...
-	result.completed_files++;
+	result.COMPLETED_FILES++;
 	// total lines
-	result.lines += metadata.lines;
+	result.TOTAL_LINES += metadata.lines;
 
 	if(!result[metadata.extension + "_FILES"]) {
 		result[metadata.extension + "_FILES"] = 1;
@@ -31,7 +33,7 @@ function updateresult(metadata) {
 	}
 
 	// we've read all the files
-	if (result.total_files === result.completed_files) {
+	if (result.TOTAL_FILES === result.COMPLETED_FILES) {
 		// call finish
 		finish();
 	}
@@ -42,7 +44,7 @@ function counter(fileName, cb) {
 		_extension = fileName.split(".").pop();
 		cb({
 			filename: fileName,
-			extension: "." + _extension !== fileName ? _extension : "PLAIN",
+			extension: "." + _extension !== fileName ? _extension.toUpperCase() : "PLAIN",
 			lines: file.toString().split(/\r\n|\r|\n/).length
 		});
 	});
@@ -83,7 +85,7 @@ function readDirectory(dir) {
 				counter(dir + fileName, updateresult);
 			}
 			// tracking...
-			result.total_files++;
+			result.TOTAL_FILES++;
 		});
 	})
 }
