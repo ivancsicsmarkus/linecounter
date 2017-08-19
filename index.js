@@ -53,7 +53,7 @@ function counter(fileName, cb) {
 const ignore = {
 	user: process.argv[2] && process.argv[2].split(","),
 	default: ["node_modules", "package.json", "package-lock.json"],
-	extensions: ["jpg", "jpeg", "png", "svg", "psd"]
+	extensions: ["jpg", "jpeg", "png", "svg", "ico", "xml", "psd"]
 }
 
 function readDirectory(dir) {
