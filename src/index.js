@@ -85,7 +85,11 @@ function counter(fileName) {
 	});
 }
 
-const ignore = require("./lib/ignore.js").concat(opts.ignore || []);
+const _ignore = require("./lib/ignore.js");
+const ignore = {
+	fileNames: _ignore.defaults.concat(opts.ignore),
+	extensions: _ignore.extensions
+}
 
 const HALF_MEGABYTE = 1024 * 512;
 
@@ -115,7 +119,11 @@ function dealWithFiles (files, dir) {
 			return;
 		}
 		// the file must be ignored (by default or by user)
-		else if (ignore.includes(fileName) || ignore.includes(path.extname(fileName))) {
+		else if (ignore.fileNames.includes(fileName)) {
+			return;
+		}
+		// the file must be ignored (by extension)
+		else if (ignore.extensions.includes(path.extname(fileName))) {
 			return;
 		}
 		// it is a directory (that is not ignored), recursion happens
