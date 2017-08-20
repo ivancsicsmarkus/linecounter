@@ -32,18 +32,15 @@ function updateresult(metadata) {
 	// total lines
 	result.TOTAL_LINES += metadata.lines;
 
-	if(!result[metadata.extension + "_FILES"]) {
-		result[metadata.extension + "_FILES"] = 1;
+	// if it is the first file with this extension, we initialize
+	if(!result[metadata.extension]) {
+		result[metadata.extension] = {};
+		result[metadata.extension].files = 1;
+		result[metadata.extension].lines = metadata.lines;
 	}
 	else {
-		result[metadata.extension + "_FILES"]++;
-	}
-
-	if(!result[metadata.extension + "_LINES"]) {
-		result[metadata.extension + "_LINES"] = metadata.lines;
-	}
-	else {
-		result[metadata.extension + "_LINES"] += metadata.lines;
+		result[metadata.extension].files++;
+		result[metadata.extension].lines += metadata.lines;
 	}
 
 	// we've read all the files
