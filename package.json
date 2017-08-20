@@ -8,7 +8,7 @@
     "url": "https://github.com/ivancsicsmarkus/linecounter.git"
   },
   "bin": {
-    "linecounter": "./index.js"
+    "linecounter": "./src/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
