@@ -1,6 +1,6 @@
 {
   "name": "linecounter",
-  "version": "2.2.6",
+  "version": "3.0.0",
   "description": "A CLI for summing lines of code in your directory.",
   "main": "index.js",
   "repository": {

@@ -11,6 +11,7 @@ Global CLI:
 
 Node Package:
 ```npm install --save linecounter```
+
 ```const linecounter = require("linecounter")```
 
 Compiling on Windows machines requires the [node-gyp prerequisites](https://github.com/nodejs/node-gyp#on-windows).
