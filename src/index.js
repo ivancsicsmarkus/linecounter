@@ -1,120 +1,141 @@
-#!/usr/bin/env node
 const fs = require("fs");
-const program = require('commander');
 const path = require("path");
 
-program
-	.option("-d, --directory <directory>", "specify directory")
-	.option("-i, --ignore <filename1, filename2... filenameN>", "ignore specific files", function list(val) {return val.split(',');})
-	.option("-f, --file <filename>", "count only one file")
-	.option("-l, --list", "list out not ignored (counting files)")
-	.parse(process.argv);
+module.exports = linecounter;
 
-var result = {
-	TOTAL_FILES: [],     // tracking how much files
-	COMPLETED_FILES: 0, // we had read
-	TOTAL_LINES: 0
+var results = {
+	TOTAL_LINES: 0,
 };
 
+var operation = {
+	TOTAL_FILES: [],     // tracking how much files
+	COMPLETED_FILES: 0   // we had read
+}
+
+var opts = {};
+
+function linecounter(cb, options) {
+	opts = options;
+	// if there was a single file specified
+	if (opts.file) {
+		var counting = counter(opts.file)
+	}
+	// start from specified directory or from pwd
+	else {
+		var counting = readDirectory(opts.directory || ".", true)
+	}
+	counting.then(res => {
+		return cb(res);
+	})
+}
+
+// for formatting output
 function finish() {
-	if (program.list) {
-		console.log(result.TOTAL_FILES.join("\n"));
+	if (opts.list) {
+		return operation.TOTAL_FILES.join("\n");
 	}
 	else {
-		delete result.TOTAL_FILES;
-		delete result.COMPLETED_FILES;
-		console.log(JSON.stringify(result));
+		return JSON.stringify(results);
 	}
 }
 
-function updateresult(metadata) {
+// when a files has been read
+function updateresults(metadata) {
 	// tracking...
-	result.COMPLETED_FILES++;
+	operation.COMPLETED_FILES++;
 	// total lines
-	result.TOTAL_LINES += metadata.lines;
+	results.TOTAL_LINES += metadata.lines;
 
-	// if it is the first file with this extension, we initialize
-	if(!result[metadata.extension]) {
-		result[metadata.extension] = {};
-		result[metadata.extension].files = 1;
-		result[metadata.extension].lines = metadata.lines;
+	// if it is the first file with this extension, we initialize the extension
+	if(!results[metadata.extension]) {
+		results[metadata.extension] = {
+			files: 1,
+			lines: metadata.lines
+		};
 	}
 	else {
-		result[metadata.extension].files++;
-		result[metadata.extension].lines += metadata.lines;
+		results[metadata.extension].files++;
+		results[metadata.extension].lines += metadata.lines;
 	}
-
 	// we've read all the files
-	if (result.TOTAL_FILES.length === result.COMPLETED_FILES) {
-		// call finish
-		finish();
+	if (operation.TOTAL_FILES.length === operation.COMPLETED_FILES) {
+		// we only counted a single file
+		if (opts.file) {
+			// we should return the results to resolve the single promise
+			return finish();
+		}
+		else {
+			// we should resolve the main promise
+			operation.resolve(finish())	
+		}
 	}
+	else return;
 }
 
-function counter(fileName, cb) {
+function counter(fileName) {
 	// tracking...
-	result.TOTAL_FILES.push(fileName);
-	fs.readFile(fileName, (err, file) => {
-		var _extension = path.extname(fileName);
-		cb({
-			filename: fileName,
-			extension: _extension ? _extension.toUpperCase() : "PLAIN",
-			lines: file.toString().split(/\r\n|\r|\n/).length
+	operation.TOTAL_FILES.push(fileName);
+	// possible extension (if it is empty, we use PLAIN)
+	var _extension = path.extname(fileName);
+	return new Promise(function(resolve, reject) {
+		// we read the file
+		fs.readFile(fileName, (err, file) => {
+			// we resolve the promise with updateresults
+			resolve(
+				updateresults({
+					filename: fileName,
+					extension: _extension ? _extension.toUpperCase() : "PLAIN",
+					lines: file.toString().split(/\r\n|\r|\n/).length
+				})
+			)
 		});
 	});
 }
 
-var _ignore = require("./lib/ignore.js");
-const ignore = {
-	user: program.ignore,
-	default: _ignore.default,
-	extensions: _ignore.extensions
-}
+const ignore = require("./lib/ignore.js").concat(opts.ignore || []);
 
 const HALF_MEGABYTE = 1024 * 512;
 
-function readDirectory(dir) {
+function readDirectory(dir, main) {
 	dir = path.join(dir, "/");
-	fs.readdir(dir, function(err, files) {
-		files.forEach((fileName) => {
-			let stats = fs.statSync(path.join(dir, fileName));
-			// .git, .DS_Store...
-			if (fileName[0] === ".") {
-				return;
-			}
-			// the file must be ignored (by the user)
-			else if (ignore.user && ignore.user.includes(fileName)) {
-				return;
-			}
-			// the file must be ignored (by default)
-			else if (ignore.default.includes(fileName)) {
-				return;
-			}
-			// the file must be ignored (because of extension)
-			else if (ignore.extensions.includes(path.extname(fileName))) {
-				return;
-			}
-			// it is a directory, recursion happens
-			else if (stats.isDirectory()) {
-				return readDirectory(dir + fileName);
-			}
-			// file is too big to be text, they've ommited the extension
-			else if (stats.size > HALF_MEGABYTE) {
-				return;
-			}
-			// it is a file
-			else {
-				counter(path.join(dir, fileName), updateresult);
-			}
-		});
-	})
+	return new Promise(function(resolve, reject) {
+		// read the directory
+		fs.readdir(dir, (err, files) => dealWithFiles(files, dir));
+		// if it is the main directory, store its resolve function
+		if (main) operation.resolve = resolve;
+	});
 }
 
-// if there was a single file specified
-if (program.file) {
-	counter(program.file, updateresult);
-}
-// start from specified directory or from pwd
-else {
-	readDirectory(program.directory || ".");
+function dealWithFiles (files, dir) {
+	files.forEach(fileName => {
+		let stats = fs.statSync(path.join(dir, fileName));
+		// .git, .DS_Store...
+		if (fileName[0] === ".") {
+			return;
+		}
+		// file is too big to be text, probably they've ommited the extension
+		else if (stats.size > HALF_MEGABYTE) {
+			// if we should log errors
+			if (opts.errors) {
+				let filePath = path.join(dir, fileName).replace(/(\s+)/g, "\\$1");
+				let fileSize = (stats.size/1024/1024).toFixed(2);
+				fs.appendFile("linecounter.error.log",`${fileName} is ~${fileSize} megabytes. It is too big to be standard text. However if you are interested in the results of this file just type: linecounter -f ${filePath}, or just ignore it with: linecounter -i ${filePath}\n`, (err) => {
+						if (err) throw err
+				});
+			}
+			return;
+		}
+		// the file must be ignored (by default or by user)
+		else if (ignore.includes(fileName) || ignore.includes(path.extname(fileName))) {
+			return;
+		}
+		// it is a directory (that is not ignored), recursion happens
+		else if (stats.isDirectory()) {
+			return readDirectory(path.join(dir, fileName), false);
+		}
+		// it is a simple file, just count it
+		else {
+			return counter(path.join(dir, fileName));
+		}
+	});
 }
