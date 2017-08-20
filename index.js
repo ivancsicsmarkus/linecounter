@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const program = require('commander');
+const path = require("path");
 
 program
 	.option("-d, --directory <directory>", "specify directory")
@@ -54,10 +55,10 @@ function counter(fileName, cb) {
 	// tracking...
 	result.TOTAL_FILES.push(fileName);
 	fs.readFile(fileName, (err, file) => {
-		_extension = fileName.split(".").pop();
+		var _extension = path.extname(fileName);
 		cb({
 			filename: fileName,
-			extension: "." + _extension !== fileName ? _extension.toUpperCase() : "PLAIN",
+			extension: _extension ? _extension.toUpperCase() : "PLAIN",
 			lines: file.toString().split(/\r\n|\r|\n/).length
 		});
 	});
@@ -70,7 +71,7 @@ const ignore = {
 }
 
 function readDirectory(dir) {
-	dir = dir + "/";
+	dir = path.join(dir, "/");
 	fs.readdir(dir, function(err, files) {
 		files.forEach((fileName) => {
 			// .git, .DS_Store...
@@ -86,7 +87,7 @@ function readDirectory(dir) {
 				return;
 			}
 			// the file must be ignored (because of extension)
-			else if (ignore.extensions.includes(fileName.split(".").pop())) {
+			else if (ignore.extensions.includes(path.extname(fileName))) {
 				return;
 			}
 			// it is a directory, recursion happens
@@ -95,7 +96,7 @@ function readDirectory(dir) {
 			}
 			// it is a file
 			else {
-				counter(dir + fileName, updateresult);
+				counter(path.join(dir, fileName), updateresult);
 			}
 		});
 	})
