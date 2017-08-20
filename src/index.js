@@ -18,11 +18,17 @@ function linecounter(cb, options) {
 	opts = options || opts;
 	// if there was a single file specified
 	if (opts.file) {
-		var counting = counter(opts.file)
+		var counting = new Promise((resolve, reject) => {
+			operation.resolve = resolve;
+			counter(opts.file);
+		});
 	}
 	// start from specified directory or from pwd
 	else {
-		var counting = readDirectory(opts.directory || ".", true)
+		var counting = new Promise((resolve, reject) => {
+			operation.resolve = resolve;
+			var counting = readDirectory(opts.directory || ".");
+		});
 	}
 	counting.then(res => {
 		return cb(res);
@@ -59,15 +65,8 @@ function updateresults(metadata) {
 	}
 	// we've read all the files
 	if (operation.TOTAL_FILES.length === operation.COMPLETED_FILES) {
-		// we only counted a single file
-		if (opts.file) {
-			// we should return the results to resolve the single promise
-			return finish();
-		}
-		else {
-			// we should resolve the main promise
-			operation.resolve(finish())	
-		}
+		// we should resolve the main promise
+		operation.resolve(finish());
 	}
 	else return;
 }
@@ -77,17 +76,12 @@ function counter(fileName) {
 	operation.TOTAL_FILES.push(fileName);
 	// possible extension (if it is empty, we use PLAIN)
 	var _extension = path.extname(fileName);
-	return new Promise(function(resolve, reject) {
-		// we read the file
-		fs.readFile(fileName, (err, file) => {
-			// we resolve the promise with updateresults
-			resolve(
-				updateresults({
-					filename: fileName,
-					extension: _extension ? _extension.toUpperCase() : "PLAIN",
-					lines: file.toString().split(/\r\n|\r|\n/).length
-				})
-			)
+	// we read the file
+	fs.readFile(fileName, (err, file) => {
+		updateresults({
+			filename: fileName,
+			extension: _extension ? _extension.toUpperCase() : "PLAIN",
+			lines: file.toString().split(/\r\n|\r|\n/).length
 		});
 	});
 }
@@ -96,14 +90,10 @@ const ignore = require("./lib/ignore.js").concat(opts.ignore || []);
 
 const HALF_MEGABYTE = 1024 * 512;
 
-function readDirectory(dir, main) {
+function readDirectory(dir) {
 	dir = path.join(dir, "/");
-	return new Promise(function(resolve, reject) {
-		// read the directory
-		fs.readdir(dir, (err, files) => dealWithFiles(files, dir));
-		// if it is the main directory, store its resolve function
-		if (main) operation.resolve = resolve;
-	});
+	// read the directory
+	fs.readdir(dir, (err, files) => dealWithFiles(files, dir));
 }
 
 function dealWithFiles (files, dir) {
@@ -131,7 +121,7 @@ function dealWithFiles (files, dir) {
 		}
 		// it is a directory (that is not ignored), recursion happens
 		else if (stats.isDirectory()) {
-			return readDirectory(path.join(dir, fileName), false);
+			return readDirectory(path.join(dir, fileName));
 		}
 		// it is a simple file, just count it
 		else {
