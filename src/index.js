@@ -65,7 +65,6 @@ function updateresults(metadata) {
 	}
 	// we've read all the files
 	if (operation.TOTAL_FILES.length === operation.COMPLETED_FILES) {
-		// we should resolve the main promise
 		operation.resolve(finish());
 	}
 	else return;

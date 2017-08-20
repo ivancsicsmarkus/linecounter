@@ -39,6 +39,7 @@ Callback gets a JSON string parameter.
 #### Options
 
 ```
+-V, --version                                     output version number
 -d, --directory <directory>                       specify directory
 -i, --ignore <filename1, filename2... filenameN>  ignore specific files
 -f, --file <filename>                             count only one file
