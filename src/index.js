@@ -15,7 +15,7 @@ var operation = {
 var opts = {};
 
 function linecounter(cb, options) {
-	opts = options;
+	opts = options || opts;
 	// if there was a single file specified
 	if (opts.file) {
 		var counting = counter(opts.file)
