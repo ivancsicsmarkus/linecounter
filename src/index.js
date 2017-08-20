@@ -16,7 +16,6 @@ function initialize(options) {
 		fileNames: _ignore.defaults.concat(opts.ignore),
 		extensions: _ignore.extensions
 	}
-	console.log(opts)
 }
 
 const _ignore = require("./lib/ignore.js");

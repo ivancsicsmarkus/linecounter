@@ -45,6 +45,7 @@ Callback gets a JSON string parameter.
 -f, --file <filename>                             count only one file
 -l, --list                                        list out not ignored (counting files)
 -e, --errors                                      list out errors to linecounter.error.log
+-t, --table                                       display results in a table
 -h, --help                                        output usage information
 ```
 
@@ -56,10 +57,11 @@ linecounter
 This will analyze the current directory. Output is in json.
 ```
 {
-  "TOTAL_LINES": 134,
-  "PLAIN": {"files":1, "lines":22},
-  "JS": {"files":1, "lines":111},
-  "JSON": {"files":1, "lines":1}
+	"TOTAL":  {"lines":272,"files":7},
+	".md":    {"files":1,"lines":90},
+	".js":    {"files":4,"lines":139},
+	".json":  {"files":1,"lines":1},
+	"PLAIN":  {"files":1,"lines":42}
 }
 ```
 ___
@@ -87,3 +89,9 @@ ___
 linecounter --list --ignore secrets.js
 ```
 List out files that would count with the current options
+___
+```
+linecounter --table
+```
+Display the results in a table
+![screenshot](http://i.imgur.com/1uZujj7.png)
