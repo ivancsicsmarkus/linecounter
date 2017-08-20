@@ -22,7 +22,7 @@ function finish() {
 	else {
 		delete result.TOTAL_FILES;
 		delete result.COMPLETED_FILES;
-		console.log(result);
+		console.log(JSON.stringify(result));
 	}
 }
 
