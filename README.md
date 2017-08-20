@@ -17,11 +17,11 @@ Compiling on Windows machines requires the [node-gyp prerequisites](https://gith
 ### Options
 
 ```
-    -d, --directory <directory>                       specify directory
-    -i, --ignore <filename1, filename2... filenameN>  ignore specific files
-    -f, --file <filename>                             count only one file
-    -l, --list                                        list out not ignored (counting files)
-    -h, --help                                        output usage information
+-d, --directory <directory>                       specify directory
+-i, --ignore <filename1, filename2... filenameN>  ignore specific files
+-f, --file <filename>                             count only one file
+-l, --list                                        list out not ignored (counting files)
+-h, --help                                        output usage information
 ```
 
 ### Examples
@@ -42,7 +42,7 @@ ___
 ```
 linecounter >> stats.txt
 ```
-Echo results in a file.
+Echo results to a file.
 ___
 ```
 linecounter -d ~/Projects/ultimate-facebook
@@ -55,7 +55,7 @@ linecounter -i secrets.js,copiedThings.json
 Ignore specified files (you don't have to add path, only filename).
 ___
 ```
-inecounter -f all.js
+linecounter -f all.js
 ```
 Get number of lines in one specified file.
 ___
