@@ -1,0 +1,2 @@
+module.exports.default = ["node_modules", "package.json", "package-lock.json", "CNAME", "LICENSE", "Procfile", "bootstrap.css", "bootstrap.min.css", "jquery.js", "jquery.min.js"];
+module.exports.extensions = [".jpg", ".JPG", ".jpeg", ".png", ".svg", ".ico", ".xml", ".yml", ".lock", ".psd", ".codekit", ".ttf", ".woff", ".woff2" ,".eot", ".pdf", ".mp4", ".mp3", ".mov"];

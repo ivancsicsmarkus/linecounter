@@ -64,10 +64,11 @@ function counter(fileName, cb) {
 	});
 }
 
+var _ignore = require("./ignore.js");
 const ignore = {
 	user: program.ignore,
-	default: ["node_modules", "package.json", "package-lock.json"],
-	extensions: ["jpg", "jpeg", "png", "svg", "ico", "xml", "psd"]
+	default: _ignore.default,
+	extensions: _ignore.extensions
 }
 
 const HALF_MEGABYTE = 1024 * 512;
