@@ -94,4 +94,5 @@ ___
 linecounter --table
 ```
 Display the results in a table
+
 ![screenshot](http://i.imgur.com/1uZujj7.png)
