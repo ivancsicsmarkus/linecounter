@@ -6,18 +6,24 @@ program
 	.option("-d, --directory <directory>", "specify directory")
 	.option("-i, --ignore <filename1, filename2... filenameN>", "ignore specific files", function list(val) {return val.split(',');})
 	.option("-f, --file <filename>", "count only one file")
+	.option("-l, --list", "list out not ignored (counting files)")
 	.parse(process.argv);
 
 var result = {
-	TOTAL_FILES: 0,     // tracking how much files
+	TOTAL_FILES: [],     // tracking how much files
 	COMPLETED_FILES: 0, // we had read
 	TOTAL_LINES: 0
 };
 
 function finish() {
-	delete result.TOTAL_FILES;
-	delete result.COMPLETED_FILES;
-	console.log(result);
+	if (program.list) {
+		console.log(result.TOTAL_FILES.join("\n"));
+	}
+	else {
+		delete result.TOTAL_FILES;
+		delete result.COMPLETED_FILES;
+		console.log(result);
+	}
 }
 
 function updateresult(metadata) {
@@ -41,7 +47,7 @@ function updateresult(metadata) {
 	}
 
 	// we've read all the files
-	if (result.TOTAL_FILES === result.COMPLETED_FILES) {
+	if (result.TOTAL_FILES.length === result.COMPLETED_FILES) {
 		// call finish
 		finish();
 	}
@@ -49,7 +55,7 @@ function updateresult(metadata) {
 
 function counter(fileName, cb) {
 	// tracking...
-	result.TOTAL_FILES++;
+	result.TOTAL_FILES.push(fileName);
 	fs.readFile(fileName, (err, file) => {
 		_extension = fileName.split(".").pop();
 		cb({
