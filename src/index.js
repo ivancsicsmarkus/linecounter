@@ -3,20 +3,28 @@ const path = require("path");
 
 module.exports = linecounter;
 
-var results = {
-	TOTAL_LINES: 0,
-};
-var operation = {
-	FILES: [],
-	COMPLETED_FILES: []
+function initialize(options) {
+	results = {
+		TOTAL: {lines: 0, files: []},
+	};
+	operation = {
+		FILES: [],
+		COMPLETED_FILES: []
+	}
+	opts = options || {};
+	ignore = {
+		fileNames: _ignore.defaults.concat(opts.ignore),
+		extensions: _ignore.extensions
+	}
+	console.log(opts)
 }
+
+const _ignore = require("./lib/ignore.js");
 
 const HALF_MEGABYTE = 1024 * 512;
 
-var opts = {};
-
 function linecounter(cb, options) {
-	opts = options || opts;
+	initialize(options);
 	// if there was a single file specified
 	if (opts.file) {
 		var counting = new Promise((resolve, reject) => {
@@ -35,12 +43,6 @@ function linecounter(cb, options) {
 	counting.then(res => {
 		return cb(res);
 	});
-}
-
-const _ignore = require("./lib/ignore.js");
-const ignore = {
-	fileNames: _ignore.defaults.concat(opts.ignore),
-	extensions: _ignore.extensions
 }
 
 function readDirectory (dir) {
@@ -80,7 +82,7 @@ function dealWithFiles (files, dir) {
 
 function readFile (fileName) {
 	operation.FILES.push(fileName);
-	var extension = path.extname(fileName) ? path.extname(fileName).toUpperCase() : "PLAIN";
+	var extension = path.extname(fileName) ? path.extname(fileName) : "PLAIN";
 	fs.readFile(fileName, (err, file) => {
 		updateResults({
 			fileName: fileName,
@@ -92,7 +94,7 @@ function readFile (fileName) {
 
 function updateResults (metadata) {
 	operation.COMPLETED_FILES.push(metadata.fileName);
-	results.TOTAL_LINES += metadata.lines;
+	results.TOTAL.lines += metadata.lines;
 
 	// if it is the first file with this extension, we initialize
 	if(!results[metadata.extension]) {
@@ -107,6 +109,7 @@ function updateResults (metadata) {
 	}
 
 	if (operation.FILES.length === operation.COMPLETED_FILES.length) {
+		results.TOTAL.files = operation.FILES.length;
 		operation.resolve(finish());
 	}
 }
