@@ -3,8 +3,9 @@ const fs = require("fs");
 const program = require('commander');
 
 program
-	.option("-d, --directory <directory>", "Specify directory")
-	.option("-i, --ignore <filenames>", "Ignore specific files", function list(val) {return val.split(',');})
+	.option("-d, --directory <directory>", "specify directory")
+	.option("-i, --ignore <filename1, filename2... filenameN>", "ignore specific files", function list(val) {return val.split(',');})
+	.option("-f, --file <filename>", "count only one file")
 	.parse(process.argv);
 
 var result = {
@@ -47,6 +48,8 @@ function updateresult(metadata) {
 }
 
 function counter(fileName, cb) {
+	// tracking...
+	result.TOTAL_FILES++;
 	fs.readFile(fileName, (err, file) => {
 		_extension = fileName.split(".").pop();
 		cb({
@@ -64,7 +67,7 @@ const ignore = {
 }
 
 function readDirectory(dir) {
-	dir = dir ? dir + "/" : "./";
+	dir = dir + "/";
 	fs.readdir(dir, function(err, files) {
 		files.forEach((fileName) => {
 			// .git, .DS_Store...
@@ -91,10 +94,15 @@ function readDirectory(dir) {
 			else {
 				counter(dir + fileName, updateresult);
 			}
-			// tracking...
-			result.TOTAL_FILES++;
 		});
 	})
 }
 
-readDirectory(program.directory);
+// if there was a single file specified
+if (program.file) {
+	counter(program.file, updateresult);
+}
+// start from specified directory or from pwd
+else {
+	readDirectory(program.directory || ".");
+}
