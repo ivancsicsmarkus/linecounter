@@ -70,10 +70,13 @@ const ignore = {
 	extensions: ["jpg", "jpeg", "png", "svg", "ico", "xml", "psd"]
 }
 
+const HALF_MEGABYTE = 1024 * 512;
+
 function readDirectory(dir) {
 	dir = path.join(dir, "/");
 	fs.readdir(dir, function(err, files) {
 		files.forEach((fileName) => {
+			let stats = fs.statSync(path.join(dir, fileName));
 			// .git, .DS_Store...
 			if (fileName[0] === ".") {
 				return;
@@ -91,8 +94,12 @@ function readDirectory(dir) {
 				return;
 			}
 			// it is a directory, recursion happens
-			else if (fs.statSync(dir + fileName).isDirectory()) {
+			else if (stats.isDirectory()) {
 				return readDirectory(dir + fileName);
+			}
+			// file is too big to be text, they've ommited the extension
+			else if (stats.size > HALF_MEGABYTE) {
+				return;
 			}
 			// it is a file
 			else {
